@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VeluméCenter">
+<link rel="apple-touch-icon" href="icon.png">
+<title>VeluméCenter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --grad-start: #5B6CF6;
+  --grad-mid: #A855F7;
+  --grad-end: #EC4899;
+  --grad: linear-gradient(135deg, #5B6CF6 0%, #A855F7 50%, #EC4899 100%);
+  --grad-soft: linear-gradient(135deg, rgba(91,108,246,0.15) 0%, rgba(168,85,247,0.15) 50%, rgba(236,72,153,0.15) 100%);
+  --bg: #0A0A0F;
+  --bg2: #111118;
+  --bg3: #18181F;
+  --bg4: #1E1E28;
+  --surface: rgba(255,255,255,0.05);
+  --surface2: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #F0EFF8;
+  --text2: rgba(240,239,248,0.6);
+  --text3: rgba(240,239,248,0.35);
+  --accent: #A855F7;
+  --success: #22D3A5;
+  --danger: #F87171;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: #000;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* ─── WRAPPER ─── */
+#wrapper {
+  width: 100%; max-width: 430px;
+  height: 100%; max-height: 932px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ─── BACKGROUND ORBS ─── */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.orb1 { width: 300px; height: 300px; background: rgba(91,108,246,0.18); top: -80px; left: -60px; }
+.orb2 { width: 280px; height: 280px; background: rgba(236,72,153,0.14); bottom: 60px; right: -80px; }
+.orb3 { width: 200px; height: 200px; background: rgba(168,85,247,0.12); top: 40%; left: 30%; }
+
+/* ─── SCREENS ─── */
+.screen { display: none; flex-direction: column; height: 100%; position: absolute; inset: 0; z-index: 1; }
+.screen.active { display: flex; animation: fadeUp 0.35s ease forwards; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─── CONNECT SCREEN ─── */
+#connect-screen {
+  background: var(--bg);
+  align-items: center;
+  justify-content: center;
+  padding: 40px 28px;
+  gap: 0;
+}
+
+.connect-logo {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 34px;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+.connect-logo .v { color: var(--text); }
+.connect-logo .center {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.connect-tagline { font-size: 13px; color: var(--text3); margin-bottom: 60px; letter-spacing: 0.3px; }
+
+.mask-visual {
+  width: 140px; height: 140px;
+  margin-bottom: 52px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.mask-visual-ring {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--grad) border-box;
+}
+.mask-visual-ring2 {
+  position: absolute; inset: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(168,85,247,0.2);
+}
+.mask-icon-svg { width: 58px; height: 58px; }
+
+.searching-wrap {
+  display: none; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 24px;
+}
+.searching-wrap.visible { display: flex; }
+.search-spinner {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 2px solid rgba(168,85,247,0.15);
+  border-top-color: var(--accent);
+  animation: spin 0.85s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.search-label { font-size: 13px; color: var(--text2); }
+
+.device-card {
+  display: none;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  width: 100%;
+  margin-bottom: 20px;
+  animation: fadeUp 0.3s ease forwards;
+}
+.device-card.visible { display: block; }
+.device-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.device-name { font-size: 15px; font-weight: 500; }
+.signal-wrap { display: flex; align-items: flex-end; gap: 3px; }
+.signal-wrap span { width: 4px; border-radius: 2px; background: var(--success); }
+.s1{height:6px;} .s2{height:10px;} .s3{height:14px;} .s4{height:18px;}
+.device-meta { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+.pill-new {
+  display: inline-block; padding: 2px 10px; border-radius: 20px;
+  background: rgba(34,211,165,0.1); color: var(--success);
+  font-size: 11px; font-weight: 500; margin-left: 8px;
+}
+.pair-btn {
+  width: 100%; padding: 14px;
+  background: var(--grad);
+  border: none; border-radius: var(--radius-sm);
+  color: white; font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 500; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.pair-btn:active { opacity: 0.85; transform: scale(0.98); }
+
+.find-btn {
+  width: 100%; padding: 16px;
+  background: transparent;
+  border: 1.5px solid transparent;
+  background-image: linear-gradient(var(--bg), var(--bg)), var(--grad);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 500; cursor: pointer;
+  transition: all 0.15s;
+}
+.find-btn:hover { background-image: linear-gradient(var(--bg3), var(--bg3)), var(--grad); }
+
+/* ─── MAIN APP ─── */
+#app { background: var(--bg); }
+
+/* TOP BAR */
+.top-bar {
+  padding: 52px 20px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: relative; z-index: 2;
+}
+.app-logo {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600; font-size: 20px; letter-spacing: -0.3px;
+}
+.app-logo .v { color: var(--text); }
+.app-logo .c {
+  background: var(--grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.conn-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(34,211,165,0.1);
+  padding: 5px 10px; border-radius: 20px;
+  border: 1px solid rgba(34,211,165,0.2);
+}
+.conn-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+.conn-label { font-size: 11px; color: var(--success); font-weight: 500; }
+
+/* SCROLL BODY */
+.scroll-body { flex: 1; overflow-y: auto; padding: 0 16px 100px; position: relative; z-index: 2; scroll-behavior: smooth; }
+.scroll-body::-webkit-scrollbar { display: none; }
+
+/* SECTION HEADER */
+.section-hd {
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin: 20px 0 10px;
+}
+
+/* GLASS CARD */
+.glass-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 12px;
+  position: relative; overflow: hidden;
+}
+.glass-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+}
+
+/* METRIC GRID */
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.metric-tile {
+  background: var(--bg4);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s;
+}
+.m-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; font-weight: 400; }
+.m-val { font-size: 26px; font-weight: 600; line-height: 1; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.m-unit { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+/* SCORE BARS */
+.score-row { margin-bottom: 14px; }
+.score-row:last-child { margin-bottom: 0; }
+.score-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.score-name { font-size: 13px; color: var(--text2); }
+.score-pct { font-size: 13px; font-weight: 500; color: var(--text); }
+.bar-track { height: 5px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width 0.9s cubic-bezier(0.4,0,0.2,1); }
+
+/* SCAN BUTTON */
+.scan-zone { display: flex; flex-direction: column; align-items: center; padding: 28px 0 8px; }
+.scan-btn-outer {
+  width: 148px; height: 148px; border-radius: 50%; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; margin-bottom: 14px;
+}
+.scan-btn-glow {
+  position: absolute; inset: -8px; border-radius: 50%;
+  background: var(--grad);
+  opacity: 0.2; filter: blur(18px);
+  transition: opacity 0.2s;
+}
+.scan-btn-outer:hover .scan-btn-glow { opacity: 0.35; }
+.scan-btn-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1.5px solid transparent;
+  background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--grad) border-box;
+  animation: rotate-ring 6s linear infinite;
+}
+@keyframes rotate-ring { to { transform: rotate(360deg); } }
+.scan-btn-inner {
+  width: 120px; height: 120px; border-radius: 50%;
+  background: var(--grad);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  border: none; cursor: pointer;
+  transition: transform 0.15s;
+  position: relative; z-index: 2;
+}
+.scan-btn-outer:active .scan-btn-inner { transform: scale(0.95); }
+.scan-btn-label { color: white; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }
+.scan-hint { font-size: 12px; color: var(--text3); }
+
+/* SCAN OVERLAY */
+#scan-overlay {
+  position: absolute; inset: 0;
+  background: var(--bg);
+  z-index: 20; display: none;
+  flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+}
+#scan-overlay.active { display: flex; }
+.so-rings { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+.so-ring {
+  position: absolute; border-radius: 50%;
+  border: 1.5px solid transparent;
+}
+.so-ring1 {
+  inset: 0;
+  background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--grad) border-box;
+  animation: spin 1.4s linear infinite;
+}
+.so-ring2 {
+  inset: 20px;
+  background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--grad) border-box;
+  animation: spin 0.9s linear infinite reverse;
+  opacity: 0.6;
+}
+.so-ring3 {
+  inset: 40px;
+  background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--grad) border-box;
+  animation: spin 2s linear infinite;
+  opacity: 0.3;
+}
+.so-center { position: relative; z-index: 2; }
+.so-title { font-size: 16px; font-weight: 500; color: var(--text); }
+.so-sub { font-size: 12px; color: var(--text3); }
+.so-progress { width: 180px; height: 3px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+.so-fill { height: 100%; background: var(--grad); border-radius: 2px; width: 0; transition: width 0.15s linear; }
+
+/* ─── BOTTOM NAV ─── */
+.bottom-nav {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 82px;
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-around;
+  padding-top: 10px;
+  z-index: 10;
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  cursor: pointer; padding: 6px 20px; border-radius: var(--radius-sm);
+  transition: all 0.2s; position: relative;
+  background: none; border: none; font-family: 'DM Sans', sans-serif;
+}
+.nav-icon-wrap {
+  width: 38px; height: 38px; border-radius: var(--radius-xs);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s;
+  position: relative;
+}
+.nav-item.active .nav-icon-wrap {
+  background: var(--grad);
+  box-shadow: 0 4px 16px rgba(168,85,247,0.35);
+}
+.nav-item svg { transition: all 0.2s; }
+.nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle { stroke: white; }
+.nav-item:not(.active) svg path, .nav-item:not(.active) svg rect, .nav-item:not(.active) svg circle { stroke: rgba(240,239,248,0.35); }
+.nav-label {
+  font-size: 10px; font-weight: 500; color: var(--text3);
+  transition: color 0.2s; letter-spacing: 0.2px;
+}
+.nav-item.active .nav-label { color: var(--text); }
+
+/* ─── SETTINGS SCREEN ─── */
+.settings-group { margin-bottom: 12px; }
+.slider-wrap { margin-bottom: 16px; }
+.slider-hd { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.slider-name { font-size: 14px; color: var(--text2); }
+.slider-val { font-size: 14px; font-weight: 500; color: var(--text); }
+
+input[type=range] {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 2px; outline: none; cursor: pointer;
+  background: linear-gradient(90deg, var(--accent) var(--pct, 50%), var(--bg4) var(--pct, 50%));
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+  background: white; border: 2px solid var(--accent);
+  box-shadow: 0 0 0 4px rgba(168,85,247,0.2);
+  cursor: pointer; transition: box-shadow 0.15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 6px rgba(168,85,247,0.25); }
+
+.focus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.focus-chip {
+  padding: 12px 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg4); cursor: pointer;
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  color: var(--text2); display: flex; align-items: center; gap: 8px;
+  transition: all 0.2s;
+}
+.focus-chip.sel {
+  background: linear-gradient(135deg, rgba(91,108,246,0.15), rgba(236,72,153,0.15));
+  border-color: rgba(168,85,247,0.4); color: var(--text);
+}
+.chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.focus-chip.sel .chip-dot { background: var(--grad); background: linear-gradient(135deg,#5B6CF6,#EC4899); }
+.focus-chip:not(.sel) .chip-dot { background: var(--bg); border: 1px solid var(--border2); }
+
+/* ─── DEVICE SCREEN ─── */
+.battery-track { height: 22px; background: var(--bg4); border-radius: 6px; overflow: hidden; position: relative; margin-bottom: 6px; }
+.battery-fill {
+  height: 100%; border-radius: 6px;
+  background: linear-gradient(90deg, #22D3A5, #059669);
+  display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;
+  transition: width 1s ease;
+}
+.battery-fill span { font-size: 11px; font-weight: 600; color: white; }
+.batt-meta { font-size: 11px; color: var(--text3); }
+
+.feature-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 0; border-bottom: 1px solid var(--border);
+}
+.feature-row:last-child { border-bottom: none; }
+.feature-left { display: flex; align-items: center; gap: 12px; }
+.feature-icon-wrap {
+  width: 36px; height: 36px; border-radius: var(--radius-xs);
+  background: var(--bg4); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.feature-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.feature-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+.toggle {
+  width: 44px; height: 24px; border-radius: 12px;
+  background: var(--bg4); border: 1px solid var(--border2);
+  position: relative; cursor: pointer; transition: all 0.25s; flex-shrink: 0;
+}
+.toggle.on { background: var(--grad); border-color: transparent; }
+.toggle::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(240,239,248,0.5); transition: transform 0.25s, background 0.25s;
+}
+.toggle.on::after { transform: translateX(20px); background: white; }
+
+.info-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.info-row:last-child { border-bottom: none; }
+.info-row span:first-child { color: var(--text3); }
+.info-row span:last-child { color: var(--text2); font-weight: 500; }
+
+/* ─── REPORT MODAL ─── */
+#report-modal {
+  position: absolute; inset: 0; z-index: 30;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none; align-items: flex-end; justify-content: center;
+  padding-bottom: 0;
+}
+#report-modal.active { display: flex; }
+.report-sheet {
+  background: var(--bg3); border-radius: 28px 28px 0 0;
+  border: 1px solid var(--border2); border-bottom: none;
+  padding: 20px 20px 40px; width: 100%;
+  animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--border2); margin: 0 auto 20px; }
+.sheet-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+.sheet-sub { font-size: 13px; color: var(--text3); margin-bottom: 20px; }
+
+.issue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.issue-chip {
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg4);
+  cursor: pointer; font-size: 12px; font-family: 'DM Sans', sans-serif;
+  color: var(--text2); display: flex; align-items: center; gap: 8px;
+  transition: all 0.2s;
+}
+.issue-chip.sel { border-color: rgba(168,85,247,0.5); background: rgba(168,85,247,0.1); color: var(--text); }
+
+textarea {
+  width: 100%; background: var(--bg4); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+  resize: none; outline: none; margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+textarea:focus { border-color: rgba(168,85,247,0.4); }
+textarea::placeholder { color: var(--text3); }
+
+.send-btn {
+  width: 100%; padding: 15px;
+  background: var(--grad); border: none; border-radius: var(--radius-sm);
+  color: white; font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.send-btn:active { opacity: 0.85; transform: scale(0.98); }
+
+.cancel-link {
+  display: block; text-align: center; margin-top: 12px;
+  font-size: 14px; color: var(--text3); cursor: pointer;
+}
+.cancel-link:hover { color: var(--text2); }
+
+/* ─── SUCCESS TOAST ─── */
+#toast {
+  position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--bg3); border: 1px solid rgba(34,211,165,0.3);
+  border-radius: var(--radius); padding: 12px 20px;
+  display: flex; align-items: center; gap: 10px;
+  opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 40;
+  white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast-icon { width: 20px; height: 20px; border-radius: 50%; background: var(--success); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.toast-text { font-size: 13px; color: var(--text); font-weight: 500; }
+
+/* ─── FADE IN ANIM ─── */
+@keyframes fadeInItem { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-item { animation: fadeInItem 0.4s ease forwards; }
+.fade-item:nth-child(1){animation-delay:.05s} .fade-item:nth-child(2){animation-delay:.1s}
+.fade-item:nth-child(3){animation-delay:.15s} .fade-item:nth-child(4){animation-delay:.2s}
+.fade-item:nth-child(5){animation-delay:.25s}
+
+/* ─── SCAN TIME ─── */
+.scan-time-row { font-size: 12px; color: var(--text3); margin-bottom: 4px; padding: 0 2px; }
+
+/* ─── LIGHT MODE CHIP ─── */
+.lm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+
+  <!-- ══ CONNECT ══ -->
+  <div id="connect-screen" class="screen active">
+    <div class="connect-logo"><span class="v">Velumé</span><span class="center">Center</span></div>
+    <div class="connect-tagline">Verbinden Sie Ihre Maske, um fortzufahren</div>
+
+    <div class="mask-visual">
+      <div class="mask-visual-ring"></div>
+      <div class="mask-visual-ring2"></div>
+      <svg class="mask-icon-svg" viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 24C10 16 14 10 29 10C44 10 48 16 48 24V34C48 42 40 50 29 50C18 50 10 42 10 34V24Z" stroke="url(#mg)" stroke-width="2" fill="none"/>
+        <circle cx="20" cy="27" r="3" stroke="url(#mg)" stroke-width="1.5" fill="none"/>
+        <circle cx="38" cy="27" r="3" stroke="url(#mg)" stroke-width="1.5" fill="none"/>
+        <path d="M22 38C24 40 26 41 29 41C32 41 34 40 36 38" stroke="url(#mg)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M10 24C6 22 4 26 5 30C6 33 9 33 10 32" stroke="url(#mg)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M48 24C52 22 54 26 53 30C52 33 49 33 48 32" stroke="url(#mg)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <defs><linearGradient id="mg" x1="4" y1="10" x2="54" y2="50" gradientUnits="userSpaceOnUse"><stop stop-color="#5B6CF6"/><stop offset="0.5" stop-color="#A855F7"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs>
+      </svg>
+    </div>
+
+    <div class="searching-wrap" id="searching-wrap">
+      <div class="search-spinner"></div>
+      <div class="search-label">Suche nach Geräten…</div>
+    </div>
+
+    <div class="device-card" id="device-card">
+      <div class="device-card-header">
+        <div class="device-name">Velumé Clarité PT</div>
+        <div class="signal-wrap"><span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span></div>
+      </div>
+      <div class="device-meta">Seriennr. VCP-2025-0042 <span class="pill-new">Neu</span></div>
+      <button class="pair-btn" onclick="connectDevice()">Verbinden</button>
+    </div>
+
+    <button class="find-btn" id="find-btn" onclick="startSearch()">Verbindung suchen</button>
+    <div style="font-size:12px;color:var(--text3);margin-top:14px;text-align:center;">Maske einschalten vor dem Koppeln</div>
+  </div>
+
+  <!-- ══ APP ══ -->
+  <div id="app" class="screen" style="display:none;">
+    <div class="top-bar">
+      <div class="app-logo"><span class="v">Velumé</span><span class="c">Center</span></div>
+      <div class="conn-badge"><div class="conn-dot"></div><span class="conn-label">Clarité PT</span></div>
+    </div>
+
+    <!-- scan overlay -->
+    <div id="scan-overlay">
+      <div class="so-rings">
+        <div class="so-ring so-ring1"></div>
+        <div class="so-ring so-ring2"></div>
+        <div class="so-ring so-ring3"></div>
+        <div class="so-center">
+          <svg width="48" height="48" viewBox="0 0 58 58" fill="none">
+            <path d="M10 24C10 16 14 10 29 10C44 10 48 16 48 24V34C48 42 40 50 29 50C18 50 10 42 10 34V24Z" stroke="url(#mg2)" stroke-width="2" fill="none"/>
+            <circle cx="20" cy="27" r="3" stroke="url(#mg2)" stroke-width="1.5" fill="none"/>
+            <circle cx="38" cy="27" r="3" stroke="url(#mg2)" stroke-width="1.5" fill="none"/>
+            <defs><linearGradient id="mg2" x1="4" y1="10" x2="54" y2="50" gradientUnits="userSpaceOnUse"><stop stop-color="#5B6CF6"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs>
+          </svg>
+        </div>
+      </div>
+      <div class="so-title" id="scan-msg">Scan läuft…</div>
+      <div class="so-sub" id="scan-sub">Maske ruhig halten</div>
+      <div class="so-progress"><div class="so-fill" id="scan-bar"></div></div>
+    </div>
+
+    <!-- HOME -->
+    <div id="home-tab" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="scroll-body">
+        <div class="scan-time-row">Letzter Scan: <span id="scan-time">Heute, 08:14 Uhr</span></div>
+
+        <div class="glass-card fade-item">
+          <div class="section-hd" style="margin-top:0;">Hautprofil</div>
+          <div class="metric-grid">
+            <div class="metric-tile">
+              <div class="m-label">Biologisches Alter</div>
+              <div class="m-val" id="bio-age">28</div>
+              <div class="m-unit">Jahre</div>
+            </div>
+            <div class="metric-tile">
+              <div class="m-label">Hautalter</div>
+              <div class="m-val" id="skin-age">24</div>
+              <div class="m-unit">Jahre</div>
+            </div>
+            <div class="metric-tile">
+              <div class="m-label">Feuchtigkeit</div>
+              <div class="m-val" id="hydration">72</div>
+              <div class="m-unit">%</div>
+            </div>
+            <div class="metric-tile">
+              <div class="m-label">Sebum</div>
+              <div class="m-val" id="sebum">38</div>
+              <div class="m-unit">µg/cm²</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card fade-item">
+          <div class="section-hd" style="margin-top:0;">Hautzustand-Analyse</div>
+          <div class="score-row">
+            <div class="score-top"><span class="score-name">Ebenmäßigkeit</span><span class="score-pct" id="v-even">84%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="b-even" style="width:84%;background:linear-gradient(90deg,#5B6CF6,#A855F7);"></div></div>
+          </div>
+          <div class="score-row">
+            <div class="score-top"><span class="score-name">Elastizität</span><span class="score-pct" id="v-elas">76%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="b-elas" style="width:76%;background:linear-gradient(90deg,#A855F7,#EC4899);"></div></div>
+          </div>
+          <div class="score-row">
+            <div class="score-top"><span class="score-name">Poren-Score</span><span class="score-pct" id="v-pore">61%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="b-pore" style="width:61%;background:linear-gradient(90deg,#5B6CF6,#EC4899);"></div></div>
+          </div>
+          <div class="score-row">
+            <div class="score-top"><span class="score-name">Pigmentierung</span><span class="score-pct" id="v-pigm">88%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="b-pigm" style="width:88%;background:linear-gradient(90deg,#22D3A5,#5B6CF6);"></div></div>
+          </div>
+          <div class="score-row">
+            <div class="score-top"><span class="score-name">Akne-Index</span><span class="score-pct" id="v-acne">22%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="b-acne" style="width:22%;background:linear-gradient(90deg,#F87171,#EC4899);"></div></div>
+          </div>
+        </div>
+
+        <div class="glass-card fade-item">
+          <div class="section-hd" style="margin-top:0;">Tiefenanalyse</div>
+          <div class="metric-grid">
+            <div class="metric-tile">
+              <div class="m-label">UV-Schaden</div>
+              <div class="m-val" id="uv-dmg" style="font-size:18px;">Gering</div>
+              <div class="m-unit">Stufe 1 / 4</div>
+            </div>
+            <div class="metric-tile">
+              <div class="m-label">Kollagen-Dichte</div>
+              <div class="m-val" id="collagen">81</div>
+              <div class="m-unit">% optimal</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scan-zone">
+          <div class="scan-btn-outer" onclick="startScan()">
+            <div class="scan-btn-glow"></div>
+            <div class="scan-btn-ring"></div>
+            <div class="scan-btn-inner">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 22C17.52 22 22 17.52 22 12" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="12" cy="12" r="4" stroke="white" stroke-width="2"/>
+                <circle cx="12" cy="12" r="1.5" fill="white"/>
+              </svg>
+              <span class="scan-btn-label">Scan</span>
+            </div>
+          </div>
+          <div class="scan-hint">Täglich nach der Reinigung empfohlen</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings-tab" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="scroll-body">
+        <div class="glass-card fade-item">
+          <div class="section-hd" style="margin-top:0;">Lichtsteuerung</div>
+          <div class="slider-wrap">
+            <div class="slider-hd"><span class="slider-name">Intensität</span><span class="slider-val" id="int-val">60%</span></div>
+            <input type="range" min="10" max="100" step="5" value="60" id="int-slider" oninput="updateSlider(this,'int-val',this.value+'%')">
+          </div>
+          <div class="slider-wrap" style="margin-bottom:0;">
+            <div class="slider-hd"><span class="slider-name">Behandlungszeit</span><span class="slider-val" id="dur-val">10 Min</span></div>
+            <input type="range" min="5" max="30" step="5" value="10" id="dur-slider" oninput="updateSlider(this,'dur-val',this.value+' Min')">
+          </div>
+        </div>
+
+        <div class="glass-card fade-item">
+          <div class="section-hd" style="margin-top:0;">Behandlungs-Fokus</div>
+          <div class="focus-grid">
+            <div class="focus-chip sel" onclick="this.classList.toggle('sel')">
+              <div class="chip-dot"></div>Akne-Kontrolle
+            </div>
+            <div class="focus-chip" onclick="this.classList.toggle('sel')">
+              <div class="chip-dot"></div>Hautreinigung
+            </div>
+            <div class="focus-chip" onclick="this.classList.toggle('sel')">
+              <div class="chip-dot"></div>Anti-Aging
+            </div>
+            <div class="focus-chip" onclick="this.classList.toggle('sel')">
+              <div class="chip-dot"></div>Beruhigung
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card fade-item">
+          <div class="section-hd" style="margin-top:0;">Lichtmodus</div>
+          <div class="lm-grid">
+            <div class="focus-chip sel" onclick="selectOne(this,'lm')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="#5B6CF6" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="#5B6CF6" stroke-width="2" stroke-linecap="round"/></svg>
+              Blaulicht
+            </div>
+            <div class="focus-chip" onclick="selectOne(this,'lm')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="#EC4899" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2" stroke="#EC4899" stroke-width="2" stroke-linecap="round"/></svg>
+              Rotlicht
+            </div>
+            <div class="focus-chip" onclick="selectOne(this,'lm')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C8 2 5 5 5 9C5 13 8 15 10 17V20H14V17C16 15 19 13 19 9C19 5 16 2 12 2Z" stroke="#22D3A5" stroke-width="1.8" fill="none"/></svg>
+              Infrarot
+            </div>
+            <div class="focus-chip" onclick="selectOne(this,'lm')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="url(#sg)" stroke-width="1.8" fill="none"/><defs><linearGradient id="sg" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#5B6CF6"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs></svg>
+              Kombination
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEVICE -->
+    <div id="device-tab" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="scroll-body">
+        <div class="glass-card fade-item">
+          <div class="section-hd" style="margin-top:0;">Akku</div>
+          <div class="battery-track">
+            <div class="battery-fill" id="batt-fill" style="width:73%;"><span>73%</span></div>
+          </div>
+          <div class="batt-meta">Ca. 4,2 Std. Restlaufzeit · Nächste Ladung empfohlen: Abend</div>
+        </div>
+
+        <div class="glass-card fade-item">
+          <div class="section-hd" style="margin-top:0;">Maskenfunktionen</div>
+          <div class="feature-row">
+            <div class="feature-left">
+              <div class="feature-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="url(#fi1)" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="url(#fi1)" stroke-width="2" stroke-linecap="round"/><defs><linearGradient id="fi1" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#5B6CF6"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs></svg>
+              </div>
+              <div><div class="feature-name">LED-Lichttherapie</div><div class="feature-sub">850nm IR + 415nm Blaulicht</div></div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="feature-row">
+            <div class="feature-left">
+              <div class="feature-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="url(#fi2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><defs><linearGradient id="fi2" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#5B6CF6"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs></svg>
+              </div>
+              <div><div class="feature-name">Micro-Current</div><div class="feature-sub">Muskelstimulation, 80 µA</div></div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="feature-row">
+            <div class="feature-left">
+              <div class="feature-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C8 4 5 7 5 11C5 15 8 18 12 22C16 18 19 15 19 11C19 7 16 4 12 2Z" stroke="url(#fi3)" stroke-width="2" fill="none"/><defs><linearGradient id="fi3" x1="5" y1="2" x2="19" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#5B6CF6"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs></svg>
+              </div>
+              <div><div class="feature-name">Thermische Massage</div><div class="feature-sub">40 °C Wärmemodus</div></div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="feature-row">
+            <div class="feature-left">
+              <div class="feature-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="url(#fi4)" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="url(#fi4)" stroke-width="2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="url(#fi4)" stroke-width="1.5" stroke-linecap="round"/><defs><linearGradient id="fi4" x1="3" y1="3" x2="21" y2="21" gradientUnits="userSpaceOnUse"><stop stop-color="#5B6CF6"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs></svg>
+              </div>
+              <div><div class="feature-name">Skin Scan Sensor</div><div class="feature-sub">Tägliche Hautanalyse</div></div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <div class="glass-card fade-item">
+          <div class="section-hd" style="margin-top:0;">Geräteinformationen</div>
+          <div class="info-row"><span>Modell</span><span>Velumé Clarité PT</span></div>
+          <div class="info-row"><span>Firmware</span><span>v2.4.1</span></div>
+          <div class="info-row"><span>Seriennr.</span><span>VCP-2025-0042</span></div>
+          <div class="info-row"><span>Bluetooth</span><span>5.2 LE</span></div>
+        </div>
+
+        <div class="glass-card fade-item">
+          <div class="section-hd" style="margin-top:0;">Support</div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:14px;line-height:1.6;">
+            Haben Sie ein Problem mit Ihrer Velumé Clarité PT? Melden Sie es direkt an unser Support-Team.
+          </div>
+          <button class="send-btn" style="background:transparent;border:1px solid rgba(248,113,113,0.4);color:#F87171;" onclick="openReport()">
+            Problem melden
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" id="nav-home" onclick="switchTab('home',this)">
+        <div class="nav-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M3 9.5L12 3L21 9.5V20C21 20.55 20.55 21 20 21H15V15H9V21H4C3.45 21 3 20.55 3 20V9.5Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="nav-label">Ergebnisse</span>
+      </button>
+      <button class="nav-item" id="nav-settings" onclick="switchTab('settings',this)">
+        <div class="nav-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="3" stroke-width="1.8"/>
+            <path d="M12 2V4M12 20V22M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M2 12H4M20 12H22M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="nav-label">Einstellungen</span>
+      </button>
+      <button class="nav-item" id="nav-device" onclick="switchTab('device',this)">
+        <div class="nav-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 2H15C15.55 2 16 2.45 16 3V21C16 21.55 15.55 22 15 22H9C8.45 22 8 21.55 8 21V3C8 2.45 8.45 2 9 2Z" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="12" cy="18.5" r="1" stroke-width="1.5"/>
+            <path d="M10 5H14" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="nav-label">Ihr Gerät</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- REPORT MODAL -->
+  <div id="report-modal">
+    <div class="report-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Problem melden</div>
+      <div class="sheet-sub">Wählen Sie das Problem und beschreiben Sie es kurz</div>
+
+      <div class="issue-grid">
+        <div class="issue-chip" onclick="this.classList.toggle('sel')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Verbindungsfehler
+        </div>
+        <div class="issue-chip" onclick="this.classList.toggle('sel')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#F87171" stroke-width="2"/><path d="M12 7V13" stroke="#F87171" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="0.5" fill="#F87171" stroke="#F87171"/></svg>
+          Sensor-Problem
+        </div>
+        <div class="issue-chip" onclick="this.classList.toggle('sel')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M23 7L16 12L23 17V7ZM1 5H15C15.55 5 16 5.45 16 6V18C16 18.55 15.55 19 15 19H1C0.45 19 0 18.55 0 18V6C0 5.45 0.45 5 1 5Z" stroke="#F87171" stroke-width="2" fill="none"/></svg>
+          LED-Problem
+        </div>
+        <div class="issue-chip" onclick="this.classList.toggle('sel')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="11" rx="2" stroke="#F87171" stroke-width="2"/><path d="M20 11H23V13H20" stroke="#F87171" stroke-width="2" stroke-linecap="round"/><path d="M6 7V5C6 3.9 6.9 3 8 3H16C17.1 3 18 3.9 18 5V7" stroke="#F87171" stroke-width="2" stroke-linecap="round"/></svg>
+          Akku-Problem
+        </div>
+        <div class="issue-chip" onclick="this.classList.toggle('sel')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#F87171" stroke-width="2"/><path d="M8 12L11 15L16 9" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Scan fehlerhaft
+        </div>
+        <div class="issue-chip" onclick="this.classList.toggle('sel')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C8 4 4 6 4 11C4 14 5 17 12 22C19 17 20 14 20 11C20 6 16 4 12 2Z" stroke="#F87171" stroke-width="2" fill="none"/></svg>
+          Sonstiges
+        </div>
+      </div>
+
+      <textarea id="report-text" rows="3" placeholder="Beschreiben Sie das Problem kurz (optional)…"></textarea>
+
+      <button class="send-btn" onclick="submitReport()">Bericht senden</button>
+      <span class="cancel-link" onclick="closeReport()">Abbrechen</span>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast">
+    <div class="toast-icon">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span class="toast-text">Bericht erfolgreich gesendet</span>
+  </div>
+</div>
+
+<script>
+const rnd = (a,b) => Math.round(Math.random()*(b-a)+a);
+const uvLvl = ['Keine','Gering','Mittel','Erhöht'];
+
+function startSearch() {
+  const btn = document.getElementById('find-btn');
+  const sw = document.getElementById('searching-wrap');
+  const dc = document.getElementById('device-card');
+  btn.style.display = 'none';
+  sw.classList.add('visible');
+  setTimeout(() => { sw.classList.remove('visible'); dc.classList.add('visible'); }, 2000);
+}
+
+function connectDevice() {
+  document.getElementById('connect-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  app.classList.add('active');
+}
+
+function switchTab(name, el) {
+  ['home','settings','device'].forEach(t => {
+    const tab = document.getElementById(t+'-tab');
+    if(tab) tab.style.display = 'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const t = document.getElementById(name+'-tab');
+  if(t){ t.style.display = 'flex'; }
+  el.classList.add('active');
+}
+
+function updateSlider(input, valId, display) {
+  document.getElementById(valId).textContent = display;
+  const pct = ((input.value - input.min) / (input.max - input.min) * 100).toFixed(0);
+  input.style.setProperty('--pct', pct + '%');
+}
+
+function selectOne(btn, group) {
+  btn.closest('.lm-grid, .focus-grid').querySelectorAll('.focus-chip').forEach(c => c.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function startScan() {
+  const overlay = document.getElementById('scan-overlay');
+  const bar = document.getElementById('scan-bar');
+  const msg = document.getElementById('scan-msg');
+  const sub = document.getElementById('scan-sub');
+  overlay.style.display = 'flex';
+  bar.style.width = '0%';
+
+  const steps = [[0,'Hautstruktur analysieren…','Tief-Scan aktiv'],[30,'Feuchtigkeit messen…','Sensor kalibriert'],[60,'Pigmentierung auswerten…','Fast fertig'],[85,'Ergebnisse berechnen…','Daten werden verarbeitet']];
+  let i = 0;
+  const iv = setInterval(() => {
+    if(i < steps.length){ bar.style.width = steps[i][0]+'%'; msg.textContent = steps[i][1]; sub.textContent = steps[i][2]; i++; }
+  }, 650);
+
+  setTimeout(() => {
+    clearInterval(iv); bar.style.width = '100%'; msg.textContent = 'Scan abgeschlossen!'; sub.textContent = '';
+    setTimeout(() => { overlay.style.display = 'none'; updateResults(); }, 700);
+  }, 3200);
+}
+
+function updateResults() {
+  const now = new Date();
+  document.getElementById('scan-time').textContent = 'Heute, '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+' Uhr';
+  document.getElementById('bio-age').textContent = rnd(25,35);
+  document.getElementById('skin-age').textContent = rnd(20,32);
+  document.getElementById('hydration').textContent = rnd(55,90);
+  document.getElementById('sebum').textContent = rnd(20,65);
+  document.getElementById('collagen').textContent = rnd(68,95);
+  document.getElementById('uv-dmg').textContent = uvLvl[rnd(0,3)];
+  [['even',rnd(60,95)],['elas',rnd(55,90)],['pore',rnd(40,80)],['pigm',rnd(65,95)],['acne',rnd(5,45)]].forEach(([id,v]) => {
+    document.getElementById('v-'+id).textContent = v+'%';
+    document.getElementById('b-'+id).style.width = v+'%';
+  });
+}
+
+function openReport() { document.getElementById('report-modal').classList.add('active'); }
+function closeReport() { document.getElementById('report-modal').classList.remove('active'); }
+function submitReport() {
+  closeReport();
+  document.getElementById('report-text').value = '';
+  document.querySelectorAll('.issue-chip').forEach(c => c.classList.remove('sel'));
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.querySelectorAll('input[type=range]').forEach(input => {
+  const pct = ((input.value - input.min)/(input.max - input.min)*100).toFixed(0);
+  input.style.setProperty('--pct', pct+'%');
+});
+</script>
+</body>
+</html>
